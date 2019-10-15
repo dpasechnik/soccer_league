@@ -11,15 +11,25 @@ class ImportDataService
     @file_name = file_name
   end
 
+  # @return [void]
   def perform
     raise Error::NoFile, "Unable to find file `#{file_name}` in `lib/data`" unless File.exist?(file_path)
 
-    LeagueResult.transaction do
-      goals_info.each { |info| LeagueResult.find_or_create_by!(info) }
+    league_results
+  end
+
+  # @return [Array]
+  def league_results
+    @league_results ||= begin
+      LeagueResult.transaction do
+        goals_info.each { |info| LeagueResult.find_or_create_by!(info) }
+      end
     end
   end
 
   private
+
+  attr_writer :league_results
 
   # @return [Integer]
   def goals_difference(row)
